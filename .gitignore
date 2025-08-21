@@ -8,8 +8,8 @@ venv/
 .env
 
 # Logs
-*.log
-error.log
+# *.log
+# error.log
 
 # Node.js / React
 node_modules/

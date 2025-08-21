@@ -92,9 +92,50 @@ const App: React.FC = () => {
         for (const vacancy of vacanciesToApply) {
             setLogs(prev => [...prev, `[Lote] Aplicando a: "${vacancy.title}" en ${vacancy.company}`]);
 
-            // --- SIMULACIÓN DE LLAMADA AL BACKEND POR CADA VACANTE ---
-            await new Promise(resolve => setTimeout(resolve, 750));
-            const success = Math.random() > 0.1; // Simula 90% de éxito
+            let success = false;
+            try {
+                const response = await fetch('http://localhost:5000/api/apply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        job_link: vacancy.url,
+                        resume_path: "C:\\Users\\HP\\Documents\\hiramDev\\auto apply job scraper\\resume.pdf", // IMPORTANT: Update this path to your actual resume.pdf
+                        cover_letter_path: "", // Optional, provide path if you have one
+                        full_name: "John Doe", // Placeholder
+                        email: "john.doe@example.com", // Placeholder
+                        phone_number: "123-456-7890", // Placeholder
+                        linkedin_profile: "https://www.linkedin.com/in/johndoe", // Placeholder
+                        github_profile: "https://github.com/johndoe", // Placeholder
+                        portfolio_link: "https://www.johndoe.com", // Placeholder
+                        years_of_experience: "5", // Placeholder
+                        grad_month: "05", // Placeholder
+                        grad_year: "2015", // Placeholder
+                        college_name: "University of Placeholder", // Placeholder
+                        degree: "Bachelor", // Placeholder
+                        major: "Computer Science", // Placeholder
+                        work_authorization: "US Citizen", // Placeholder
+                        sponsorship_required: "No", // Placeholder
+                        disability: "No", // Placeholder
+                        veteran_status: "No" // Placeholder
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error al aplicar a la vacante.');
+                }
+
+                const data = await response.json();
+                success = data.message === "Application successful"; // Assuming backend returns this message on success
+
+            } catch (err: any) {
+                console.error('Error during application:', err);
+                setLogs(prev => [...prev, `Error al aplicar a ${vacancy.title}: ${err.message || 'Desconocido'}`]);
+                success = false;
+            }
+
             const finalStatus: JobStatus = success ? 'applied' : 'failed';
 
             setVacancies(prev => prev.map(v => v.id === vacancy.id ? { ...v, status: finalStatus } : v));
@@ -154,11 +195,49 @@ const App: React.FC = () => {
         setVacancies([]);
         setLogs(['Iniciando scraping...']);
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            const response = await fetch('http://localhost:5000/api/get_links', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    job_title: keywords,
+                    location: location,
+                    radius: 0, // Not used by current Python script, but for API consistency
+                    job_platform: 'Glassdoor' // Not used by current Python script, but for API consistency
+                }),
+            });
 
-        setVacancies(dummyVacancies.map(v => ({ ...v, status: 'pending' })));
-        setLogs(prev => [...prev, `Scraping completado. ${dummyVacancies.length} vacantes encontradas.`]);
-        setIsScraping(false);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error al buscar vacantes.');
+            }
+
+            const data = await response.json();
+            // Assuming the backend returns an object like { links: ["url1", "url2"] }
+            const fetchedLinks: string[] = data.links || [];
+
+            // Convert fetched links into Vacancy objects
+            const newVacancies: Vacancy[] = fetchedLinks.map((url, index) => ({
+                id: index + 1, // Simple ID generation
+                title: 'Vacante Encontrada', // Placeholder, ideally parsed from link or backend
+                company: 'Desconocida', // Placeholder
+                location: location, // Use the searched location
+                url: url,
+                status: 'pending',
+            }));
+
+            setVacancies(newVacancies);
+            setLogs(prev => [...prev, `Scraping completado. ${newVacancies.length} vacantes encontradas.`]);
+
+        } catch (err: any) {
+            console.error('Error during scraping:', err);
+            setError(err.message || 'Error desconocido durante el scraping.');
+            setLogs(prev => [...prev, `Error durante el scraping: ${err.message || 'Desconocido'}`]);
+        } finally {
+            setIsScraping(false);
+        }
     };
 
     const getStatusPill = (status: JobStatus) => {
