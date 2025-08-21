@@ -1,44 +1,120 @@
-# Software Engineering Job Application Bot (2.0) 👩🏾‍💻
-#### 5 Python Projects in 5 Days - Day 5: Scripting
+# Job Scraper & Auto-Applier: Full-Stack Edition 🚀
 
-A script to automatically search Glassdoor for job listings, aggregate every application URL, and apply to each job using pre-populated data. ***All with one click!***
+This project has evolved into a full-stack application designed to automate the job application process. It combines a powerful Python backend for web scraping and auto-applying with a modern React frontend for an intuitive user interface.
 
-![app demo](demo.gif)
+## ✨ Features
 
-**📸YouTube Tutorial: [https://youtu.be/N_7d8vg_TQA](https://youtu.be/N_7d8vg_TQA)**
+*   **Automated Job Search:** Scrapes job listings from Glassdoor (extendable to other platforms).
+*   **Auto-Apply Functionality:** Automatically fills out and submits job applications on platforms like Greenhouse and Lever.
+*   **User-Friendly Interface:** A React-based web application to control the scraping and application process.
+*   **Scheduler:** Program applications to run in batches at set intervals.
+*   **Activity Log:** Tracks the progress and status of scraping and application tasks.
 
-## Inspiration
-Ever sit at your desk for hours, clicking through endless job listings hoping to strike gold with one response? To solve this, I made a script a few months ago, which would take in a list of job URLs and automatically apply to potentially 100s of jobs with the click of a button. This was great, but there was one problem — the process of aggregating those links is painstaking. So, I wanted to automate that process with this project! ✨
+## 🏗️ Architecture
 
-## Installation
-1. Install [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) (or an alternatie driver for your browser of choice):
-   * Run `brew cask install chromedriver`
-   * Confirm installation: `chromedriver --version`
-   * Check location of ChromeDriver: `which chromedriver`
-   * Wherever the `driver` is initialized in the code, insert the ChromeDriver location
-2. Install Selenium: `pip install selenium`
-3. Install BeautifulSoup: `pip install beautifulsoup4`
+The application consists of two main parts:
+
+1.  **Python Backend (Flask):**
+    *   Handles the core logic for web scraping (`get_links.py`) and automated job application (`apply.py`) using Selenium.
+    *   Exposes a REST API (using Flask) to allow the frontend to trigger these actions and receive results.
+    *   Manages browser automation (e.g., logging in, navigating pages, filling forms).
+
+2.  **React Frontend:**
+    *   Provides a graphical user interface for users to input job search criteria, monitor application progress, and configure the application scheduler.
+    *   Communicates with the Python backend via HTTP requests (`fetch` API).
+
+## 🚀 Getting Started
+
+Follow these steps to set up and run the application on your local machine.
+
+### Prerequisites
+
+*   **Python 3.8+:** [Download Python](https://www.python.org/downloads/)
+*   **Node.js & npm:** [Download Node.js](https://nodejs.org/en/download/) (npm is included)
+*   **ChromeDriver:** Selenium requires a WebDriver to interact with browsers.
+    *   Download the appropriate ChromeDriver version for your Chrome browser: [ChromeDriver Downloads](https://chromedriver.chromium.org/downloads)
+    *   Place the `chromedriver` executable in a known location (e.g., `/usr/local/bin/chromedriver` on macOS/Linux, or a specific path on Windows). You might need to update the `driver_path` in `get_links.py` and `apply.py` (or pass it via the API if you extend the frontend).
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository_url>
+    cd auto-apply-job-scraper # Or your project's root directory
+    ```
+
+2.  **Backend Setup (Python):**
+    *   **Create a Python Virtual Environment:**
+        ```bash
+        python -m venv venv
+        ```
+    *   **Activate the Virtual Environment:**
+        *   **Windows:** `.\venv\Scripts\activate`
+        *   **macOS/Linux:** `source venv/bin/activate`
+    *   **Install Python Dependencies:**
+        ```bash
+        pip install -r requirements.txt
+        ```
+        (The `requirements.txt` file should contain `Flask`, `Flask-Cors`, `Selenium`, `beautifulsoup4`).
+
+3.  **Frontend Setup (React):**
+    *   **Install Node.js Dependencies:**
+        ```bash
+        npm install
+        ```
+
+### Running the Application
+
+1.  **Start the Python Backend Server:**
+    *   Ensure your Python virtual environment is activated.
+    *   From the project root directory, run:
+        ```bash
+        python server.py
+        ```
+    *   The server will run on `http://localhost:5000`. Keep this terminal window open.
+
+2.  **Start the React Frontend Development Server:**
+    *   Open a **new terminal window**.
+    *   Navigate to the project root directory.
+    *   Run:
+        ```bash
+        npm start
+        ```
+    *   This will open the React application in your browser (usually at `http://localhost:3000`).
+
+## ⚙️ Configuration
+
+*   **Resume Path:** In `src/App.tsx`, locate the `runApplicationBatch` function. You **must** update the `resume_path` to the absolute path of your `resume.pdf` file.
+*   **Personal Details:** In `src/App.tsx`, within the `runApplicationBatch` function, update the placeholder personal details (e.g., `full_name`, `email`, `linkedin_profile`) with your actual information. Ideally, these would be managed via a user profile in the UI.
 
 ## Usage
-#### To test `get_links.py`
-1. Uncomment the last line `get_links.py`
-2. Run `$ python get_links.py`
 
-#### To run the entire script:
-1. Set a number of pages you'd like to iterate through here
-2. Run `$ python apply.py`
-3. The script will open [glassdoor.com](https://www.glassdoor.com/index.htm), at which point you should log-in
-4. From there on, everything is automatic!
+1.  **Search for Vacancies:**
+    *   In the frontend, enter your desired keywords and location.
+    *   Click "Buscar Vacantes" (Search Vacancies).
+    *   The application will scrape Glassdoor and display the found job links.
 
+2.  **Auto-Apply:**
+    *   Once vacancies are listed, configure the "Programador de Aplicaciones" (Application Scheduler) with the desired batch size and interval.
+    *   Click "Iniciar" (Start) to begin the automated application process.
+    *   The application will open browser windows and attempt to apply to jobs in batches.
 
-## Thanks
+## ⚠️ Important Notes
 
-* [Selenium](https://selenium-python.readthedocs.io/) - A tool designed for QA testing, but that actually works great for making these types of bots
-* [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/doc) - A tool to scrape HTML/XML content (that saved be *big time* with this project)
+*   **Login to Glassdoor:** When the Selenium browser window opens for scraping, you might need to manually log in to Glassdoor if prompted.
+*   **CAPTCHAs/Manual Intervention:** Automated processes can sometimes be interrupted by CAPTCHAs or other security measures. Be prepared for occasional manual intervention.
+*   **Development Server:** The Python Flask server is for development purposes only. Do not use it in a production deployment.
 
-## Learn More
+## 🙏 Thanks
 
-* [My Previous Video](https://www.youtube.com/watch?v=nRmrEC5WnzY) - For more background on the `apply.py` code
+*   [Selenium](https://selenium-python.readthedocs.io/) - For browser automation.
+*   [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/doc) - For parsing HTML content.
+*   [Flask](https://flask.palletsprojects.com/) - For the Python web framework.
+*   [React](https://react.dev/) - For the frontend UI.
+
+## 📚 Learn More
+
+*   [Original YouTube Tutorial](https://youtu.be/N_7d8vg_TQA) - For background on the initial Python script.
 
 ## License
 
