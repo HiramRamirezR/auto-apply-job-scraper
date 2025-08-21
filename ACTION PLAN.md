@@ -8,8 +8,9 @@ This document outlines the steps to connect the Python backend (job scraper) wit
 
 ### 1.1. Dependency Installation
 
-*   **Action:** Ensure Flask, Flask-CORS, and Selenium are installed in the Python environment.
-*   **Command:** `pip install Flask Flask-CORS selenium`
+*   **Action:** Ensure Flask, Flask-CORS, Selenium, and beautifulsoup4 are installed in the Python environment.
+*   **Command:** `pip install -r requirements.txt` (after creating/updating `requirements.txt` and activating `venv`).
+*   **Status:** **COMPLETED** (Dependencies installed via `requirements.txt` within a `venv`).
 
 ### 1.2. Flask Server Creation (`server.py`)
 
@@ -17,20 +18,25 @@ This document outlines the steps to connect the Python backend (job scraper) wit
 *   **Status:** **COMPLETED** (Content provided in the previous step).
 *   **Key Points:**
     *   Defines two endpoints: `/api/get_links` (POST) and `/api/apply` (POST).
-    *   Uses `flask_cors` to allow requests from the frontend.
+    *   Utilizes `flask_cors` to allow requests from the frontend.
     *   Imports and calls the `get_job_links` (from `get_links.py`) and `auto_apply_to_job` (from `apply.py`) functions.
 
 ### 1.3. Verification and Refactoring of Original Python Scripts
 
-*   **Action:** Confirm that the `get_job_links` and `auto_apply_to_job` functions in `get_links.py` and `apply.py` respectively, are importable and do not have logic within their `if __name__ == '__main__':` blocks that prevents their use as library functions. If necessary, refactor so that the main logic is in separate functions that can be imported.
-*   **Status:** **PENDING** (Requires manual review of `get_links.py` and `apply.py`).
+*   **Action:** Confirmed that the `get_job_links` and `auto_apply_to_job` functions in `get_links.py` and `apply.py` respectively, are importable and correctly refactored.
+*   **Status:** **COMPLETED** (`get_links.py` and `apply.py` have been refactored and corrected).
 
 ### 1.4. Backend Server Execution
 
 *   **Action:** Start the Flask server to listen for requests.
 *   **Command:** `python server.py`
-*   **Status:** **PENDING** (To be done after script verification).
+*   **Status:** **COMPLETED** (Server is running successfully on `http://localhost:5000`).
 *   **Note:** The server will run on `http://localhost:5000` by default.
+
+### 1.5. Git Ignore Configuration
+
+*   **Action:** Created a `.gitignore` file to exclude `venv/`, `node_modules/`, `*.log`, and other common development artifacts from version control.
+*   **Status:** **COMPLETED**
 
 ## 2. Frontend Integration (React)
 
@@ -39,11 +45,11 @@ This document outlines the steps to connect the Python backend (job scraper) wit
 ### 2.1. Identification of Key Components
 
 *   **Action:** Determine which React components (`App.tsx`, `inde.tsx`, or others) will implement the logic for interacting with the backend (e.g., input forms, action buttons, results display).
-*   **Status:** **PENDING** (Requires review of the frontend structure).
+*   **Status:** **CURRENT FOCUS** (Requires review of the frontend structure. **Please provide the content of `src/App.tsx`**).
 
 ### 2.2. HTTP Request Implementation
 
-*   **Action:** Add code to React components to make `POST` requests to the backend endpoints (`/api/get_links` and `/api/apply`) using the `fetch` API or a library like `axios`.
+*   **Action:** Add code in React components to make `POST` requests to the backend endpoints (`/api/get_links` and `/api/apply`) using the `fetch` API or a library like `axios`.
 *   **Status:** **PENDING**
 *   **Key Points:**
     *   Send necessary data (e.g., `job_title`, `location` for `get_links`; `job_link`, `resume_path` for `apply`) in the request body as JSON.
@@ -55,7 +61,7 @@ This document outlines the steps to connect the Python backend (job scraper) wit
 *   **Status:** **PENDING**
 *   **Key Points:**
     *   Display loading, success, and error messages to the user.
-    *   Dynamically render results.
+    *   Render dynamically results.
 
 ## 3. Testing and Debugging
 
@@ -64,7 +70,7 @@ This document outlines the steps to connect the Python backend (job scraper) wit
 ### 3.1. Backend Testing
 
 *   **Action:** Use a tool like Postman, Insomnia, or `curl` to send requests to the Flask endpoints and verify that they respond as expected.
-*   **Status:** **PENDING**
+*   **Status:** **PENDING** (Can be done manually by user if desired, or we can guide through it).
 
 ### 3.2. Frontend-Backend Integration Testing
 
