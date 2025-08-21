@@ -1,26 +1,19 @@
-# selenium stup
+# selenium setup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 # to find links
-import re
+from bs4 import BeautifulSoup
 import json
 import urllib.request
-from bs4 import BeautifulSoup
+import re
 
 import time # to sleep
-
-# fill this in with your job preferences!
-PREFERENCES = {
-    "position_title": "Software Engineer",
-    "location": "San Francisco, CA"
-}
 
 # helper method to give user time to log into glassdoor
 def login(driver):
@@ -35,7 +28,7 @@ def login(driver):
     return True # return once this is complete
 
 # navigate to appropriate job listing page
-def go_to_listings(driver):
+def go_to_listings(driver, position_title, location):
 
     # wait for the search bar to appear
     element = WebDriverWait(driver, 20).until(
@@ -44,22 +37,22 @@ def go_to_listings(driver):
 
     try:
         # look for search bar fields
-        position_field = driver.find_element_by_xpath("//*[@id='sc.keyword']")
-        location_field = driver.find_element_by_xpath("//*[@id='sc.location']")
+        position_field = driver.find_element(By.XPATH, "//*[@id='sc.keyword']")
+        location_field = driver.find_element(By.XPATH, "//*[@id='sc.location']")
         location_field.clear()
 
-        # fill in with pre-defined data
-        position_field.send_keys(PREFERENCES['position_title'])
+        # fill in with provided data
+        position_field.send_keys(position_title)
         location_field.clear()
-        location_field.send_keys(PREFERENCES['location'])
+        location_field.send_keys(location)
 
         # wait for a little so location gets set
         time.sleep(1)
-        driver.find_element_by_xpath(" //*[@id='scBar']/div/button").click()
+        driver.find_element(By.XPATH, " //*[@id='scBar']/div/button").click()
 
         # close a random popup if it shows up
         try:
-            driver.find_element_by_xpath("//*[@id='JAModal']/div/div[2]/span").click()
+            driver.find_element(By.XPATH, "//*[@id='JAModal']/div/div[2]/span").click()
         except NoSuchElementException:
             pass
 
@@ -116,28 +109,31 @@ def aggregate_links(driver):
             # if the result url is from glassdoor, it's an 'easy apply' one and worth not saving
             # however, this logic can be changed if you want to keep those
             if "glassdoor" not in newLink:
-                print(newLink)
-                print('\n')
                 allFixedLinks.append(newLink)
-        except Exception:
-            # horrible way to catch errors but this doesnt happen regualrly (just 302 HTTP error)
-            print(f'ERROR: failed for {link}')
-            print('\n')
+        except Exception as e:
+            # Log the error instead of printing to console
+            print(f'ERROR: failed for {link} - {e}')
 
     # convert to a set to eliminate duplicates
     return set(allFixedLinks)
 
-# 'main' method to iterate through all pages and aggregate URLs
-def getURLs():
-    driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver')
+# Main method to iterate through all pages and aggregate URLs
+def get_job_links(job_title, location, radius, job_platform, driver_path='/usr/local/bin/chromedriver'):
+    # Note: The current implementation primarily supports Glassdoor.
+    # 'radius' and 'job_platform' parameters are included for future expansion
+    # and consistency with the API endpoint, but are not fully utilized here.
+
+    driver = webdriver.Chrome(executable_path=driver_path)
     success = login(driver)
     if not success:
         # close the page if it gets stuck at some point - this logic can be improved
-        driver.close()
+        driver.quit() # Use quit() to close browser and terminate WebDriver session
+        return set() # Return empty set if login fails
 
-    success = go_to_listings(driver)
+    success = go_to_listings(driver, job_title, location) # Pass parameters here
     if not success:
-        driver.close()
+        driver.quit()
+        return set() # Return empty set if navigation fails
 
     allLinks = set()
     page = 1
@@ -151,7 +147,7 @@ def getURLs():
             allLinks.update(aggregate_links(driver))
 
             # find next page button and click it
-            next_page = driver.find_element_by_xpath("//*[@id='FooterPageNav']/div/ul/li[3]/a")
+            next_page = driver.find_element(By.XPATH, "//*[@id='FooterPageNav']/div/ul/li[3]/a")
             this_page = next_page.get_attribute('href')
 
             # use regex to parse out the page number
@@ -178,8 +174,21 @@ def getURLs():
             # update URL
             next_url = f"{m.group('url')}{page}.htm"
 
-    driver.close()
+    driver.quit() # Use quit() to close browser and terminate WebDriver session
     return allLinks
 
 # for testing purpose
-# getURLs()
+if __name__ == '__main__':
+    # Example usage when run directly
+    # You might want to add command-line argument parsing here
+    # or set default values for testing.
+    print("Running get_job_links directly for testing...")
+    links = get_job_links(
+        job_title="Software Engineer",
+        location="San Francisco, CA",
+        radius=0, # Not used in current Glassdoor implementation
+        job_platform="Glassdoor" # Not used in current Glassdoor implementation
+    )
+    for link in links:
+        print(link)
+    print(f"Found {len(links)} job links.")
