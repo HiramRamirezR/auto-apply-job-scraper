@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+venv/
+.env
+
+# Logs
+*.log
+error.log
+
+# Node.js / React
+node_modules/
+build/
+dist/
+.parcel-cache/
+.next/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
